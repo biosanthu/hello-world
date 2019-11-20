@@ -1,0 +1,6 @@
+Set<String> Custid = new Set<String>{'0500000000', '0500003706', '0500009737', '0500012941', '0500019122', '0500031924', '0500054656'};
+// List<Account> accountList = Database.query('SELECT Id FROM Account WHERE Phone IN (\''+String.join(Custid,'\',\'')+'\')')
+
+ Map<Id,Lead> ldMap = new Map<Id,Lead>([SELECT id,Name,Phone,Email,FormName__c,LeadRegisteredDateTime__c,DealerName__c,LeadSource,Owner.name,LMS_CarModel__c FROM lead WHERE  Phone IN (\''+String.join(Custid,'\',\'')+'\')')]);
+ 
+ System.debug(' Size : ' + ldMap.size());
