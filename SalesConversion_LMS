@@ -1,0 +1,47 @@
+ 
+        Set<String> custid = new Set<String>();
+        map<String,VIN__c> VINmap = new map<String,VIN__c>();
+        Map<String, Lead> leadMap = new Map<String, Lead>();
+        Set<String> duplicateLeads = new Set<String>();
+        List<Lead> updateldlst = new List<Lead>();
+        Map<String,Id> BranchCodeMap = new Map<String,Id>();
+        List<LMS_LeadMap__c> listLeadMap = new List<LMS_LeadMap__c>();
+        
+       /* for(Account a:[SELECT Branch_Code__c,Id,Name FROM Account WHERE RecordTypeId =:Ntid]){
+            BranchCodeMap.put(a.Branch_Code__c,a.Id);
+        } */
+        
+        List<VIN__c> lstVINs = [SELECT Mobile_Phone__c,Sales_Type_Category__c,Sales_Type__c,Sale_Date__c,Status__c,VIN_No__c FROM VIN__c WHERE LastModifiedDate > 2019-10-31T00:00:00.000z AND Sales_Type__c = 'Retail' AND Status__c = 'Sold' AND Sales_Month__c = 'October'];
+        
+        for (VIN__c objVIN: lstVINs){       
+            custid.add('0'+ objVIN.Mobile_Phone__c );
+            VINmap.put('0'+ objVIN.Mobile_Phone__c,objVIN);
+        }
+       
+         System.Debug(' Customer IDs ' +  custid );
+        Map<Id,Lead> ldMap = new Map<Id,Lead>([SELECT id,Name,Phone,Email,FormName__c,LeadRegisteredDateTime__c,DealerName__c,LeadSource,Owner.name,LMS_CarModel__c,LMS_PurchaseHorizon__c,Status,LMS_SocialID__c FROM lead WHERE Phone in:custid AND Status IN ('Appointment','Qualified','Unqualified','Shown','New','Sold') AND LeadRegisteredDateTime__c >= LAST_N_MONTHS:5 Order By LeadRegisteredDateTime__c asc]);
+        
+        for(Lead l:ldMap.values()){
+            if (leadMap.containsKey(l.Phone)) {        
+                duplicateLeads.add(l.Phone);  
+            } else {
+                if(l.LeadRegisteredDateTime__c.date() <= VINmap.get(l.Phone).Sale_Date__c)
+                    leadMap.put(l.Phone, l);
+            }
+        } 
+        System.debug('Duplicate Lead Size: '+duplicateLeads.size());
+        If(duplicateLeads.size() > 0) {
+            for(String l:duplicateLeads){
+                leadMap.remove(l);  
+                /*   AggregateResult ar = [Select id,MIN(LeadRegisteredDateTime__c) from lead where Phone =:l AND Status != 'Sold' AND LeadRegisteredDateTime__c >= LAST_N_MONTHS:5 group by ID limit 1];
+system.debug('###' + ar.get('id'));
+Id leadid = ((ID)ar.get('id')); */
+                Id leadid = [Select id from lead where Phone =:l AND LeadRegisteredDateTime__c >= LAST_N_MONTHS:5  order by LeadRegisteredDateTime__c asc limit 1].id;
+                Lead led = ldMap.get(leadid);
+                leadMap.put(led.Phone,led);
+                
+                system.debug('Lead ID '+ led.Id +' Lead ph '+ led.Phone + ' $$$ Lead Registered Date ' + led.LeadRegisteredDateTime__c + ' ### Invoice Date -' + VINmap.get(led.Phone).Sale_Date__c +' $$ Difference '+ led.LeadRegisteredDateTime__c.date().monthsBetween(VINmap.get(led.Phone).Sale_Date__c));          
+            }   
+        }
+        
+        System.Debug('Total Converted leads Size ' + leadMap.size());
