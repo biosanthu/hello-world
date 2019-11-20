@@ -1,0 +1,14 @@
+list<String> Custid = new List<String>{'0500000000', '0500003706', '0500009737', '0500012941', '0500019122', '0500031924', '0500054656'};
+// List<Account> accountList = Database.query('SELECT Id FROM Account WHERE Phone IN (\''+String.join(Custid,'\',\'')+'\')')
+String test =  '('+'\''+String.join(Custid,'\',\'') + '\''+')';
+    System.debug('@@@ Raw' + Custid );
+    system.debug('Check Formated ' + '('+'\''+String.join(Custid,'\',\'') + '\''+')');
+
+   System.debug('@@@' + test);
+    
+// Map<Id,Lead> ldMap = new Map<Id,Lead>([SELECT id,Name,Phone FROM lead WHERE  Phone IN + '(\''+ city +'\')'+ ]);
+
+// Map<Id,Lead> ldMap = new Map<Id,Lead>([SELECT id,Name,Phone FROM lead WHERE  Phone IN + 'test'+ ]);
+  String dynld = 'SELECT id,Name,Phone FROM lead WHERE  Phone IN ' + test ;
+Map<Id,Lead> ldMap = new Map<Id,Lead>((List<Lead>)Database.query(dynld));
+ System.debug(' Size : ' + ldMap.size());
