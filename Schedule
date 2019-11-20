@@ -1,0 +1,22 @@
+database.executebatch(new AMI_ImportNSALeadMap(),200);
+
+Date currentTime = Date.now().addSeconds(UserInfo.getTimezone().getOffset(Datetime.now())/1000);
+system.debug('>> Now >> '+ CALENDAR_MONTH(currentTime));
+
+AMI_NKSALeads_Batch myBatch = new AMI_NKSALeads_Batch(); 
+        String ScheduledTime = '0 50 23 * * ? *';  //
+        String jobID = system.schedule('AMI Export Lead Scheduled Job', ScheduledTime, myBatch);
+        system.debug('^^ JobID >> '+jobID); 
+
+AMI_NKSALeadMaps_Batch myBatch = new AMI_NKSALeadMaps_Batch(); 
+            String ScheduledTime = '0 55 23 * * ? *';  //
+            String jobID = system.schedule('AMI Lead Sales ExportScheduled Job', ScheduledTime, myBatch);
+            system.debug('^^ JobID >> '+jobID);
+
+Time myTime = Time.newInstance(18, 30, 0, 0);
+DateTime dt=System.now();
+
+String dtStr=dt.format('HH:mm');
+DateTime now = DateTime.now();
+Integer hours = now.hour(), minutes = now.minute(), seconds = now.second();
+system.debug(myTime+' ' + dtStr +'@@@'+ now +'##' + hours+':'+minutes+':'+seconds);
